@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Toula Trick Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F1E6;
+    --paper-dim:#EFE8D8;
+    --ink:#2B2A24;
+    --muted:#8A8270;
+    --line:#E2D8C1;
+    --pine:#33513C;
+    --pine-dark:#223829;
+    --amber:#C2831F;
+    --amber-soft:#F1DFB6;
+    --card:#FFFFFF;
+    --danger:#A6472E;
+    --shadow: 0 10px 30px rgba(43,42,36,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Nunito Sans', -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior:none;
+  }
+  h1,h2,.display{font-family:'Nunito', -apple-system, sans-serif; font-weight:800;}
+  #app{max-width:520px; margin:0 auto; padding:20px 16px 32px; min-height:100vh; display:flex; flex-direction:column;}
+
+  /* ---------- top bar ---------- */
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .brand{display:flex; align-items:center; gap:8px;}
+  .brand .paw{font-size:22px;}
+  .brand h1{font-size:19px; margin:0; letter-spacing:-0.01em;}
+  .iconbtn{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+    font-size:16px; cursor:pointer; color:var(--pine);
+  }
+  .iconbtn:active{transform:scale(0.94);}
+
+  /* ---------- filter screen ---------- */
+  #screen-filter{flex:1; display:flex; flex-direction:column;}
+  .lead{color:var(--muted); font-size:14px; margin:0 0 16px;}
+  .chiprow{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;}
+  .chip{
+    padding:9px 14px; border-radius:999px; border:1.5px solid var(--line);
+    background:var(--card); font-size:13.5px; font-weight:700; cursor:pointer;
+    color:var(--muted); display:flex; align-items:center; gap:6px;
+    transition: all .12s ease;
+  }
+  .chip .count{font-weight:600; opacity:.65; font-size:12px;}
+  .chip.active{color:#fff; border-color:transparent;}
+  .chip:active{transform:scale(0.96);}
+  .filter-actions{display:flex; gap:8px; margin-bottom:auto; padding-bottom:20px;}
+  .linkbtn{
+    background:none; border:none; color:var(--pine); font-weight:700; font-size:13px;
+    cursor:pointer; padding:4px 0; text-decoration:underline; text-underline-offset:2px;
+  }
+  .startbar{position:sticky; bottom:0; background:linear-gradient(to top, var(--paper) 60%, transparent);
+    padding-top:16px;}
+  .btn-primary{
+    width:100%; background:var(--pine); color:#fff; border:none; border-radius:14px;
+    padding:16px; font-size:16px; font-weight:800; font-family:'Nunito';
+    cursor:pointer; box-shadow:var(--shadow);
+  }
+  .btn-primary:disabled{background:#c9c2b0; box-shadow:none; cursor:not-allowed;}
+  .btn-primary:active:not(:disabled){transform:scale(0.98);}
+  .empty-hint{color:var(--muted); font-size:13px; text-align:center; padding:6px 0 0;}
+
+  .addtrick-cta{
+    margin-top:6px; border:1.5px dashed var(--line); border-radius:14px; padding:14px;
+    text-align:center; color:var(--muted); font-size:13.5px; cursor:pointer; background:var(--paper-dim);
+  }
+  .addtrick-cta b{color:var(--pine);}
+
+  /* ---------- session screen ---------- */
+  #screen-session{flex:1; display:flex; flex-direction:column;}
+  .session-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .progress{font-size:13px; font-weight:700; color:var(--muted);}
+  .progress b{color:var(--ink);}
+  .endbtn{background:none; border:none; color:var(--danger); font-weight:700; font-size:13px; cursor:pointer;}
+
+  .stage{flex:1; display:flex; align-items:center; justify-content:center; perspective:1400px; min-height:340px;}
+  .card{
+    width:100%; max-width:440px; height:360px; position:relative;
+    transform-style: preserve-3d; transition: transform .5s cubic-bezier(.4,.2,.2,1);
+    cursor:pointer;
+  }
+  .card.flipped{transform: rotateY(180deg);}
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden;
+    border-radius:20px; background:var(--card); box-shadow:var(--shadow);
+    border:1px solid var(--line); display:flex; flex-direction:column;
+    padding:26px 24px; overflow:hidden;
+  }
+  .face-back{transform: rotateY(180deg); overflow-y:auto;}
+  .face .pawmark{
+    position:absolute; right:-18px; bottom:-18px; font-size:130px; opacity:.05;
+    transform:rotate(-14deg); pointer-events:none;
+  }
+  .badge{
+    align-self:flex-start; font-size:11.5px; font-weight:800; padding:5px 11px;
+    border-radius:999px; color:#fff; margin-bottom:auto;
+  }
+  .front-body{display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; text-align:center;}
+  .trick-name{font-size:29px; margin:10px 0 6px; line-height:1.15;}
+  .cue{color:var(--muted); font-size:14px;}
+  .cue b{color:var(--amber); font-weight:800;}
+  .taphint{
+    margin-top:22px; font-size:12.5px; color:var(--muted); font-weight:700;
+    display:flex; align-items:center; gap:6px; animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+  .back-title{font-size:17px; margin:0 0 4px; color:var(--pine);}
+  .back-cue{font-size:12.5px; color:var(--muted); margin-bottom:14px;}
+  .steps{list-style:none; margin:0; padding:0; counter-reset:step;}
+  .steps li{
+    counter-increment:step; position:relative; padding:8px 0 8px 34px; font-size:14.5px;
+    line-height:1.4; border-bottom:1px solid var(--line);
+  }
+  .steps li:last-child{border-bottom:none;}
+  .steps li::before{
+    content:counter(step); position:absolute; left:0; top:8px; width:24px; height:24px;
+    background:var(--amber-soft); color:var(--pine-dark); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;
+  }
+
+  .controls{display:flex; align-items:center; gap:10px; margin-top:18px;}
+  .ctrlbtn{
+    flex:1; background:var(--card); border:1.5px solid var(--line); border-radius:14px;
+    padding:14px; font-size:14.5px; font-weight:800; font-family:'Nunito'; color:var(--ink);
+    cursor:pointer;
+  }
+  .ctrlbtn:disabled{opacity:.35; cursor:not-allowed;}
+  .ctrlbtn:active:not(:disabled){transform:scale(0.97);}
+  .ctrlbtn.next{background:var(--pine); color:#fff; border-color:transparent; flex:1.4;}
+  .shufflebtn{
+    background:none; border:none; color:var(--muted); font-size:12.5px; font-weight:700;
+    display:flex; align-items:center; gap:5px; margin:12px auto 0; cursor:pointer;
+  }
+
+  .reshuffle-overlay{
+    position:absolute; inset:0; background:rgba(246,241,230,0.92); border-radius:20px;
+    display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--pine);
+    font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .reshuffle-overlay.show{opacity:1;}
+
+  /* ---------- modals ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(43,42,36,0.45); display:flex; align-items:flex-end;
+    justify-content:center; z-index:50;
+  }
+  .modal{
+    background:var(--paper); width:100%; max-width:520px; border-radius:22px 22px 0 0;
+    padding:22px 20px 26px; max-height:86vh; overflow-y:auto; box-shadow:0 -10px 30px rgba(0,0,0,0.2);
+  }
+  .modal h2{font-size:18px; margin:0 0 4px;}
+  .modal .lead{margin-bottom:14px;}
+  .modal-close{float:right; background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer;}
+  label{display:block; font-size:12.5px; font-weight:800; color:var(--pine-dark); margin:14px 0 6px;}
+  input[type=text], select, textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:11px 12px;
+    font-size:14.5px; font-family:inherit; background:var(--card); color:var(--ink);
+  }
+  textarea{min-height:110px; resize:vertical;}
+  .newcat-row{display:flex; gap:8px; margin-top:8px;}
+  .modal-save{
+    width:100%; margin-top:18px; background:var(--pine); color:#fff; border:none;
+    border-radius:12px; padding:14px; font-weight:800; font-size:15px; cursor:pointer;
+  }
+  .custom-list{margin-top:18px; border-top:1px solid var(--line); padding-top:12px;}
+  .custom-item{
+    display:flex; justify-content:space-between; align-items:center; padding:9px 0;
+    border-bottom:1px solid var(--line); font-size:13.5px;
+  }
+  .custom-item span.tag{font-size:11px; color:var(--muted); margin-left:6px;}
+  .del-x{background:none; border:none; color:var(--danger); font-size:15px; cursor:pointer; padding:4px 6px;}
+
+  .info-section{margin-bottom:16px;}
+  .info-section h3{font-size:13.5px; margin:0 0 6px; color:var(--pine-dark); text-transform:uppercase; letter-spacing:.03em;}
+  .info-section p{font-size:14px; margin:0 0 6px; line-height:1.5;}
+  .marker-row{display:flex; gap:8px; margin-bottom:6px; font-size:14px;}
+  .marker-row b{min-width:64px; color:var(--amber); flex-shrink:0;}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand"><span class="paw">🐾</span><h1>Toula Trick Trainer</h1></div>
+    <button class="iconbtn" id="infoBtn" title="Marker system & rules">?</button>
+  </div>
+
+  <!-- FILTER SCREEN -->
+  <div id="screen-filter">
+    <p class="lead">Pick what's in play right now, then run the deck.</p>
+    <div class="chiprow" id="chipRow"></div>
+    <div class="filter-actions">
+      <button class="linkbtn" id="selectAll">Select all</button>
+      <button class="linkbtn" id="selectNone">Clear</button>
+    </div>
+    <div class="addtrick-cta" id="openAdd">+ <b>Add a trick</b> — from your Excel list, an Advanced tag, whatever's missing</div>
+    <div class="startbar">
+      <p class="empty-hint" id="emptyHint" hidden>Pick at least one category to start.</p>
+      <button class="btn-primary" id="startBtn">Start session</button>
+    </div>
+  </div>
+
+  <!-- SESSION SCREEN -->
+  <div id="screen-session" hidden>
+    <div class="session-header">
+      <div class="progress">Card <b id="posNow">1</b> of <span id="posTotal">1</span></div>
+      <button class="endbtn" id="endBtn">End session</button>
+    </div>
+    <div class="stage">
+      <div class="card" id="card">
+        <div class="face face-front">
+          <span class="badge" id="badgeFront">Category</span>
+          <div class="front-body">
+            <div class="trick-name" id="trickName">—</div>
+            <div class="cue" id="cueFront"></div>
+          </div>
+          <div class="taphint">👆 Tap the card to see the steps</div>
+          <div class="pawmark">🐾</div>
+        </div>
+        <div class="face face-back">
+          <div class="back-title" id="backTitle">—</div>
+          <div class="back-cue" id="backCue"></div>
+          <ol class="steps" id="stepsList"></ol>
+        </div>
+        <div class="reshuffle-overlay" id="reshuffleOverlay">🔀 Reshuffling the deck…</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctrlbtn" id="backBtn">◀ Back</button>
+      <button class="ctrlbtn next" id="nextBtn">Next ▶</button>
+    </div>
+    <button class="shufflebtn" id="shuffleBtn">🔀 Shuffle again</button>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- built-in trick data (from Toula's Trick Cheat Sheet) ---------------- */
+const BUILTIN_TRICKS = [
+  // Core Obedience
+  {name:"Sit", category:"Core Obedience", cue:"Sit", steps:[
+    "Lure the treat above her nose so her head tips back.",
+    "Wait for her rear to hit the floor.",
+    "Mark \u201cYes!\u201d the instant she sits.",
+    "Reward, then add the verbal cue once she's reliably offering the sit."]},
+  {name:"Down", category:"Core Obedience", cue:"Down", steps:[
+    "Start from a Sit.",
+    "Lure the treat from her nose straight down between her front paws.",
+    "Mark \u201cYes!\u201d the moment both elbows touch the ground.",
+    "Reward right at her chest to reinforce the position."]},
+  {name:"Stay", category:"Core Obedience", cue:"Stay", steps:[
+    "Ask for a Sit.",
+    "Say \u201cStay\u201d with a flat palm out \u2014 no other movement (Statue Rule).",
+    "Step back once, then return to her.",
+    "Mark and reward for holding position.",
+    "Build duration first (3s \u2192 5s \u2192 10s) before adding distance."]},
+  {name:"Wait", category:"Core Obedience", cue:"Wait", steps:[
+    "Use at doors, elevators, and curbs before crossing the threshold.",
+    "Mark any pause she offers on her own.",
+    "Release her forward with \u201cOkay.\u201d"]},
+  {name:"Come", category:"Core Obedience", cue:"Come", steps:[
+    "Say her name, pause, then say \u201cCome\u201d once.",
+    "Move backward to encourage her toward you.",
+    "Mark the instant she commits to coming.",
+    "Reward generously \u2014 let ~70% of recalls end with releasing her back to play.",
+    "Use a long line for at least the first 100 recalls."]},
+  {name:"Focus (Look)", category:"Core Obedience", cue:"Focus", steps:[
+    "Hold a treat near your own eyes.",
+    "Mark any eye contact she makes, even briefly.",
+    "Build duration from 1 second up to 5 seconds before adding the verbal cue."]},
+  {name:"Leave It", category:"Core Obedience", cue:"Leave It", steps:[
+    "Closed fist with treat inside \u2014 mark when she disengages.",
+    "Open palm with treat covered \u2014 mark when she looks away.",
+    "Treat under your foot \u2014 mark disengagement.",
+    "Uncovered treat on the floor \u2014 mark before she takes it.",
+    "Real-world items on walks \u2014 same criteria, harder distraction."]},
+  // Safety and Handling
+  {name:"Here (Emergency Recall)", category:"Safety & Handling", cue:"Here", steps:[
+    "Use a unique word reserved only for this \u2014 never for regular practice.",
+    "Say it once, then reward immediately with a jackpot of 3\u20135 treats in a row.",
+    "Reserve this word strictly for real emergencies."]},
+  {name:"Off", category:"Safety & Handling", cue:"Off", steps:[
+    "Say \u201cOff\u201d and toss a treat away from you.",
+    "Mark the instant all four paws touch the floor.",
+    "Prevent jumping proactively by asking for a Sit before greetings."]},
+  {name:"Drop It", category:"Safety & Handling", cue:"Drop It", steps:[
+    "While she has the toy, present a high-value treat nearby.",
+    "Mark the moment she releases the toy for the treat.",
+    "Give the toy back ~70% of the time so dropping isn't a loss."]},
+  {name:"Take It", category:"Safety & Handling", cue:"Take It", steps:[
+    "Hold the item still and steady.",
+    "If she lunges for it, remove it immediately.",
+    "Once she's calm, say \u201cTake it\u201d and let her take the item."]},
+  {name:"Touch", category:"Safety & Handling", cue:"Touch", steps:[
+    "Present a flat hand about 2 inches from her nose.",
+    "Mark the instant her nose touches your palm.",
+    "Use later for redirection away from triggers."]},
+  {name:"Place", category:"Safety & Handling", cue:"Place", steps:[
+    "Walk her to the mat.",
+    "Toss a treat onto the mat.",
+    "Mark when all four paws land on it.",
+    "Encourage a Down once she's settled there.",
+    "Release with \u201cOkay.\u201d"]},
+  {name:"Settle", category:"Safety & Handling", cue:"Settle", steps:[
+    "Watch for naturally calm behavior \u2014 no cue needed to start.",
+    "Mark and reward relaxed muscles and soft eyes.",
+    "Remember: this is a state you're capturing, not a position you're luring."]},
+  {name:"Kennel", category:"Safety & Handling", cue:"Kennel", steps:[
+    "Toss a high-value treat into the crate while saying \u201cKennel.\u201d",
+    "Let her leave freely afterward.",
+    "Never use the crate as punishment \u2014 it should only predict good things."]},
+  {name:"Middle", category:"Safety & Handling", cue:"Middle", steps:[
+    "Lure her through your legs in a U-shape.",
+    "Mark when she ends up sitting between your feet.",
+    "Practice in low-distraction spots before using it in crowds."]},
+  {name:"Back Up", category:"Safety & Handling", cue:"Back Up", steps:[
+    "Slowly step toward her.",
+    "Mark the very first backward step she takes.",
+    "Toss the treat behind her to reinforce the direction."]},
+  // Walking
+  {name:"Loose-Leash Walking", category:"Walking", cue:"Let's Walk", steps:[
+    "Use a harness, not a collar, for this.",
+    "Stop moving the instant the leash goes tight.",
+    "Resume walking only once the leash goes slack again.",
+    "Reward generously for walking near you without tension."]},
+  {name:"Heel", category:"Walking", cue:"Work Walk", steps:[
+    "Position her head at your knee.",
+    "Cue \u201cWork Walk\u201d before crossing streets or entering crowds.",
+    "Reward frequently for staying in position."]},
+  {name:"Go Sniff", category:"Walking", cue:"Go Sniff", steps:[
+    "Say \u201cGo sniff\u201d to release her to explore.",
+    "Let her sniff freely for 20\u201340 seconds.",
+    "Say \u201cLet's go\u201d to cue the return to walking pace."]},
+  {name:"Let's Go", category:"Walking", cue:"Let's Go", steps:[
+    "Keep the leash short and set your own pace.",
+    "Allow only 2\u20133 seconds of sniffing while passing a distraction.",
+    "Keep moving forward steadily past the trigger."]},
+  {name:"Check", category:"Walking", cue:"Check", steps:[
+    "Point to a target and say \u201cCheck.\u201d",
+    "Mark her investigating it.",
+    "Mark again when she returns to you.",
+    "\u201cCheck your spots\u201d means completing the full inspection loop before returning."]},
+  // Novice Tricks
+  {name:"Bow", category:"Novice", cue:"Bow", steps:[
+    "Lure her head down and forward between her front paws.",
+    "Keep her rear end up \u2014 don't let her drop into a full Down.",
+    "Mark the bow position, then reward."]},
+  {name:"Wave", category:"Novice", cue:"Wave", steps:[
+    "Start from the Shake position.",
+    "Lure the paw upward instead of into your hand.",
+    "Mark the moment the paw lifts toward a wave."]},
+  {name:"Shake", category:"Novice", cue:"Shake", steps:[
+    "Mark any paw lift, even small ones, to start.",
+    "Shape it gradually into a deliberate, controlled paw placement in your hand."]},
+  {name:"Paws Up", category:"Novice", cue:"Paws Up", steps:[
+    "Lure her onto a low, stable platform.",
+    "Mark the moment all four paws are up on it."]},
+  {name:"Wipe Your Paws", category:"Novice", cue:"Wipe", steps:[
+    "Lure a paw across a mat or towel.",
+    "Mark the wiping motion as it happens."]},
+  {name:"Foot", category:"Novice", cue:"Foot", steps:[
+    "Lure her paw toward your foot.",
+    "Mark the moment her paw makes contact."]},
+  {name:"What's That?", category:"Novice", cue:"What's That?", steps:[
+    "Point to or present a novel object.",
+    "Cue her to investigate it.",
+    "Mark the head turn toward the object."]},
+  {name:"Peek!", category:"Novice", cue:"Peek!", steps:[
+    "Lure her head around the edge of a corner or object.",
+    "Mark the peeking motion."]},
+  {name:"Spin", category:"Novice", cue:"Spin", steps:[
+    "Lure her nose in a tight clockwise circle.",
+    "Mark once she completes the full circle."]},
+  {name:"Twirl", category:"Novice", cue:"Twirl", steps:[
+    "Same as Spin, but lure counter-clockwise.",
+    "Mark on completing the full circle."]},
+  {name:"Speak", category:"Novice", cue:"Speak", steps:[
+    "Build mild excitement first.",
+    "Cue \u201cSpeak.\u201d",
+    "Mark the bark the instant it happens, then reward."]},
+  {name:"Quiet", category:"Novice", cue:"Quiet", steps:[
+    "Cue \u201cQuiet\u201d once.",
+    "Mark the silence that follows.",
+    "Reward calm, then gradually stretch duration before rewarding."]},
+  // Intermediate Tricks
+  {name:"Weave", category:"Intermediate", cue:"Weave", steps:[
+    "Lure her through a figure-8 pattern between your legs.",
+    "Mark each successful pass through."]},
+  {name:"Cross", category:"Intermediate", cue:"Cross", steps:[
+    "Lure her from one side of your body to the other.",
+    "Mark the moment she crosses over."]},
+  {name:"Roll Over", category:"Intermediate", cue:"Roll Over", steps:[
+    "Start from a Down.",
+    "Lure over her shoulder.",
+    "Build quarter turns first before asking for a full roll."]},
+  {name:"Pretty (Beg)", category:"Intermediate", cue:"Pretty", steps:[
+    "Start from a Sit.",
+    "Lure the treat above her nose.",
+    "Mark a balanced upright begging position."]},
+  {name:"Clean Up", category:"Intermediate", cue:"Clean Up", steps:[
+    "Lure her toward the toy bin with a toy in her mouth.",
+    "Mark when she drops the toy near or into the bin."]},
+  {name:"Bang! (Play Dead)", category:"Intermediate", cue:"Bang!", steps:[
+    "Use a finger-gun hand signal.",
+    "Lure her head to the side and down.",
+    "Mark stillness once she's lying still."]},
+  {name:"Find It", category:"Intermediate", cue:"Find It", steps:[
+    "Start with visible hides she watches you place.",
+    "Progress to hidden treats she doesn't see placed.",
+    "Move to scent-only searches with no visual cue.",
+    "Expand to multiple rooms once she's reliable."]},
+  {name:"Bring It", category:"Intermediate", cue:"Bring It", steps:[
+    "Shape mouth contact with the object first.",
+    "Build to picking it up.",
+    "Build to carrying it.",
+    "Finish by shaping delivery back to your hand."]},
+  {name:"Object Names", category:"Intermediate", cue:"(object name)", steps:[
+    "Teach one object name at a time.",
+    "Reward only the correct object as you add more names to her vocabulary."]}
+];
+
+/* ---------------- category colors (deterministic) ---------------- */
+const CATEGORY_COLORS = {
+  "Core Obedience": "#33513C",
+  "Safety & Handling": "#C2831F",
+  "Walking": "#3E6E72",
+  "Novice": "#B5657A",
+  "Intermediate": "#6B5B95",
+  "Advanced": "#A6472E"
+};
+const FALLBACK_COLORS = ["#5B7A6B","#9A6B3C","#4E6A8C","#8C5B6E","#6E7A3C"];
+function colorFor(cat){
+  if(CATEGORY_COLORS[cat]) return CATEGORY_COLORS[cat];
+  let h=0; for(let i=0;i<cat.length;i++) h = (h*31 + cat.charCodeAt(i)) >>> 0;
+  return FALLBACK_COLORS[h % FALLBACK_COLORS.length];
+}
+
+/* ---------------- state ---------------- */
+let customTricks = [];
+let selectedCategories = new Set();
+let deck = [];
+let viewPos = 0;
+let flipped = false;
+
+const CUSTOM_KEY = 'toula-custom-tricks';
+const FILTER_KEY = 'toula-last-filters';
+
+function allTricks(){ return BUILTIN_TRICKS.concat(customTricks); }
+function allCategories(){
+  const set = new Set();
+  allTricks().forEach(t => set.add(t.category));
+  return Array.from(set);
+}
+
+/* ---------------- storage ---------------- */
+async function loadCustom(){
+  try{
+    const res = await window.storage.get(CUSTOM_KEY, false);
+    if(res && res.value) customTricks = JSON.parse(res.value);
+  }catch(e){ customTricks = []; }
+}
+async function saveCustom(){
+  try{ await window.storage.set(CUSTOM_KEY, JSON.stringify(customTricks), false); }catch(e){}
+}
+async function loadFilters(){
+  try{
+    const res = await window.storage.get(FILTER_KEY, false);
+    if(res && res.value){
+      const arr = JSON.parse(res.value);
+      selectedCategories = new Set(arr.filter(c => allCategories().includes(c)));
+    }
+  }catch(e){}
+  if(selectedCategories.size === 0) allCategories().forEach(c => selectedCategories.add(c));
+}
+async function saveFilters(){
+  try{ await window.storage.set(FILTER_KEY, JSON.stringify(Array.from(selectedCategories)), false); }catch(e){}
+}
+
+/* ---------------- filter screen ---------------- */
+function renderChips(){
+  const row = document.getElementById('chipRow');
+  row.innerHTML = '';
+  allCategories().forEach(cat => {
+    const count = allTricks().filter(t => t.category === cat).length;
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (selectedCategories.has(cat) ? ' active' : '');
+    chip.style.background = selectedCategories.has(cat) ? colorFor(cat) : '';
+    chip.style.borderColor = selectedCategories.has(cat) ? colorFor(cat) : '';
+    chip.innerHTML = `${cat} <span class="count">${count}</span>`;
+    chip.onclick = () => {
+      if(selectedCategories.has(cat)) selectedCategories.delete(cat);
+      else selectedCategories.add(cat);
+      saveFilters();
+      renderChips();
+      updateStartState();
+    };
+    row.appendChild(chip);
+  });
+}
+function updateStartState(){
+  const filtered = allTricks().filter(t => selectedCategories.has(t.category));
+  document.getElementById('startBtn').disabled = filtered.length === 0;
+  document.getElementById('emptyHint').hidden = filtered.length !== 0;
+}
+
+document.getElementById('selectAll').onclick = () => { allCategories().forEach(c=>selectedCategories.add(c)); saveFilters(); renderChips(); updateStartState(); };
+document.getElementById('selectNone').onclick = () => { selectedCategories.clear(); saveFilters(); renderChips(); updateStartState(); };
+
+/* ---------------- shuffle helper ---------------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* ---------------- session ---------------- */
+function startSession(){
+  const filtered = allTricks().filter(t => selectedCategories.has(t.category));
+  if(filtered.length === 0) return;
+  deck = shuffle(filtered);
+  viewPos = 0;
+  flipped = false;
+  document.getElementById('screen-filter').hidden = true;
+  document.getElementById('screen-session').hidden = false;
+  renderCard();
+}
+
+function renderCard(){
+  const t = deck[viewPos];
+  const col = colorFor(t.category);
+  document.getElementById('badgeFront').textContent = t.category;
+  document.getElementById('badgeFront').style.background = col;
+  document.getElementById('trickName').textContent = t.name;
+  document.getElementById('cueFront').innerHTML = t.cue ? `Cue: <b>\u201c${t.cue}\u201d</b>` : '';
+  document.getElementById('backTitle').textContent = t.name;
+  document.getElementById('backCue').textContent = t.cue ? `Cue: \u201c${t.cue}\u201d` : '';
+  const list = document.getElementById('stepsList');
+  list.innerHTML = '';
+  t.steps.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    list.appendChild(li);
+  });
+  document.getElementById('posNow').textContent = viewPos+1;
+  document.getElementById('posTotal').textContent = deck.length;
+  document.getElementById('backBtn').disabled = viewPos === 0;
+  flipped = false;
+  document.getElementById('card').classList.remove('flipped');
+}
+
+document.getElementById('card').onclick = () => {
+  flipped = !flipped;
+  document.getElementById('card').classList.toggle('flipped', flipped);
+};
+
+function showReshuffle(cb){
+  const overlay = document.getElementById('reshuffleOverlay');
+  overlay.classList.add('show');
+  setTimeout(() => { cb(); overlay.classList.remove('show'); }, 500);
+}
+
+document.getElementById('nextBtn').onclick = () => {
+  if(viewPos + 1 < deck.length){
+    viewPos++;
+    renderCard();
+  } else {
+    showReshuffle(() => {
+      let newDeck = shuffle(deck);
+      if(deck.length > 1 && newDeck[0] === deck[deck.length-1]){
+        [newDeck[0], newDeck[1]] = [newDeck[1], newDeck[0]];
+      }
+      deck = newDeck;
+      viewPos = 0;
+      renderCard();
+    });
+  }
+};
+document.getElementById('backBtn').onclick = () => {
+  if(viewPos > 0){ viewPos--; renderCard(); }
+};
+document.getElementById('shuffleBtn').onclick = () => {
+  showReshuffle(() => {
+    deck = shuffle(deck);
+    viewPos = 0;
+    renderCard();
+  });
+};
+document.getElementById('endBtn').onclick = () => {
+  document.getElementById('screen-session').hidden = true;
+  document.getElementById('screen-filter').hidden = false;
+  renderChips();
+  updateStartState();
+};
+document.getElementById('startBtn').onclick = startSession;
+
+/* ---------------- add trick modal ---------------- */
+document.getElementById('openAdd').onclick = openAddModal;
+
+function openAddModal(){
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.id = 'addBackdrop';
+  const catOptions = allCategories().map(c => `<option value="${c}">${c}</option>`).join('');
+  backdrop.innerHTML = `
+    <div class="modal">
+      <button class="modal-close" id="closeAdd">&times;</button>
+      <h2>Add a trick</h2>
+      <p class="lead">Bring in anything from your Excel list, tag it Advanced, whatever's missing.</p>
+      <label>Trick name</label>
+      <input type="text" id="newName" placeholder="e.g. Balance Cookie">
+      <label>Category</label>
+      <select id="newCat">
+        ${catOptions}
+        <option value="__new__">+ New category\u2026</option>
+      </select>
+      <div class="newcat-row" id="newCatRow" hidden>
+        <input type="text" id="newCatText" placeholder="e.g. Advanced">
+      </div>
+      <label>Cue word (optional)</label>
+      <input type="text" id="newCue" placeholder="e.g. Balance">
+      <label>Steps (one per line)</label>
+      <textarea id="newSteps" placeholder="Lure onto the cushion.&#10;Mark when she holds still.&#10;Build duration."></textarea>
+      <button class="modal-save" id="saveTrick">Save trick</button>
+      <div class="custom-list" id="customList"></div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  document.getElementById('closeAdd').onclick = () => backdrop.remove();
+  backdrop.onclick = (e) => { if(e.target === backdrop) backdrop.remove(); };
+  document.getElementById('newCat').onchange = (e) => {
+    document.getElementById('newCatRow').hidden = e.target.value !== '__new__';
+  };
+  renderCustomList();
+  document.getElementById('saveTrick').onclick = async () => {
+    const name = document.getElementById('newName').value.trim();
+    let cat = document.getElementById('newCat').value;
+    if(cat === '__new__') cat = document.getElementById('newCatText').value.trim();
+    const cue = document.getElementById('newCue').value.trim();
+    const steps = document.getElementById('newSteps').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!name || !cat || steps.length === 0){
+      alert('Add a name, a category, and at least one step.');
+      return;
+    }
+    customTricks.push({name, category:cat, cue, steps});
+    await saveCustom();
+    selectedCategories.add(cat);
+    await saveFilters();
+    renderChips();
+    updateStartState();
+    document.getElementById('newName').value = '';
+    document.getElementById('newCue').value = '';
+    document.getElementById('newSteps').value = '';
+    renderCustomList();
+  };
+}
+function renderCustomList(){
+  const wrap = document.getElementById('customList');
+  if(!wrap) return;
+  if(customTricks.length === 0){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = '<label style="margin-top:4px;">Your added tricks</label>' + customTricks.map((t,i) =>
+    `<div class="custom-item"><span>${t.name} <span class="tag">${t.category}</span></span>
+     <button class="del-x" data-idx="${i}">\u2715</button></div>`).join('');
+  wrap.querySelectorAll('.del-x').forEach(btn => {
+    btn.onclick = async () => {
+      customTricks.splice(Number(btn.dataset.idx), 1);
+      await saveCustom();
+      renderChips();
+      updateStartState();
+      renderCustomList();
+    };
+  });
+}
+
+/* ---------------- info modal ---------------- */
+document.getElementById('infoBtn').onclick = () => {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="modal">
+      <button class="modal-close" id="closeInfo">&times;</button>
+      <h2>Markers &amp; key rules</h2>
+      <div class="info-section">
+        <h3>Marker system</h3>
+        <div class="marker-row"><b>Yes!</b> Terminal marker \u2014 always followed by a treat.</div>
+        <div class="marker-row"><b>Good</b> Duration marker \u2014 keep going.</div>
+        <div class="marker-row"><b>Get It</b> Toss the treat.</div>
+        <div class="marker-row"><b>Okay</b> Release cue.</div>
+        <p>Say the cue once. Statue Rule: no body movement while giving a cue. Mark first, then treat within 1 second.</p>
+      </div>
+      <div class="info-section">
+        <h3>Key rules</h3>
+        <p>Sessions: 3\u20135 minutes. Always finish on a success.</p>
+        <p>Change one variable at a time: Duration, Distance, or Distraction.</p>
+        <p>Two failures in a row = too hard. Make it easier.</p>
+        <p>No engagement = no learning. If she won't take food, stop.</p>
+        <p>Reward placement: beside you for Heel, between paws for Down, at the chest for Sit.</p>
+        <p>Arousal target: 2\u20133. At 4+, reduce difficulty immediately.</p>
+      </div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  document.getElementById('closeInfo').onclick = () => backdrop.remove();
+  backdrop.onclick = (e) => { if(e.target === backdrop) backdrop.remove(); };
+};
+
+/* ---------------- init ---------------- */
+(async function init(){
+  await loadCustom();
+  await loadFilters();
+  renderChips();
+  updateStartState();
+})();
+</script>
+</body>
+</html>
