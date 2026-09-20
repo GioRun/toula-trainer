@@ -60,7 +60,8 @@
   .chip .count{font-weight:600; opacity:.65; font-size:12px;}
   .chip.active{color:#fff; border-color:transparent;}
   .chip:active{transform:scale(0.96);}
-  .filter-actions{display:flex; gap:8px; margin-bottom:auto; padding-bottom:20px;}
+  .filter-actions{display:flex; gap:12px; margin:-8px 0 16px;}
+  .filter-actions.last{margin-bottom:auto; padding-bottom:20px;}
   .linkbtn{
     background:none; border:none; color:var(--pine); font-weight:700; font-size:13px;
     cursor:pointer; padding:4px 0; text-decoration:underline; text-underline-offset:2px;
@@ -215,18 +216,23 @@
   <!-- FILTER SCREEN -->
   <div id="screen-filter">
     <p class="lead">Pick what's in play right now, then run the deck.</p>
+    <div class="lvl-label">Category</div>
     <div class="chiprow" id="chipRow"></div>
+    <div class="filter-actions">
+      <button class="linkbtn" id="selectAll">Select All</button>
+      <button class="linkbtn" id="selectNone">Unselect All</button>
+    </div>
     <div class="lvl-label">Level</div>
     <div class="chiprow" id="levelRow"></div>
-    <div class="filter-actions">
-      <button class="linkbtn" id="selectAll">Select all</button>
-      <button class="linkbtn" id="selectNone">Unselect All</button>
+    <div class="filter-actions last">
+      <button class="linkbtn" id="levelAll">Select All</button>
+      <button class="linkbtn" id="levelNone">Unselect All</button>
     </div>
     <div class="addtrick-cta" id="openAdd">+ <b>Add a trick</b> — from your Excel list, an Advanced tag, whatever's missing</div>
     <div class="addtrick-cta" id="openGuides">📖 <b>Guides</b> — routines and principles</div>
     <button class="linkbtn" id="openRemoved" hidden></button>
     <div class="startbar">
-      <p class="empty-hint" id="emptyHint" hidden>Pick at least one category to start.</p>
+      <p class="empty-hint" id="emptyHint" hidden>Pick at least one category and level to start.</p>
       <button class="btn-primary" id="startBtn">Start session</button>
     </div>
   </div>
@@ -756,6 +762,8 @@ function updateStartState(){
 
 document.getElementById('selectAll').onclick = () => { allCategories().forEach(c=>selectedCategories.add(c)); saveFilters(); renderChips(); updateStartState(); };
 document.getElementById('selectNone').onclick = () => { selectedCategories.clear(); saveFilters(); renderChips(); updateStartState(); };
+document.getElementById('levelAll').onclick = () => { LEVELS.forEach(l=>selectedLevels.add(l)); saveLevels(); renderChips(); updateStartState(); };
+document.getElementById('levelNone').onclick = () => { selectedLevels.clear(); saveLevels(); renderChips(); updateStartState(); };
 
 /* ---------------- shuffle helper ---------------- */
 function shuffle(arr){
