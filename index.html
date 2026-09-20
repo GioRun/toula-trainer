@@ -220,7 +220,7 @@
     <div class="chiprow" id="levelRow"></div>
     <div class="filter-actions">
       <button class="linkbtn" id="selectAll">Select all</button>
-      <button class="linkbtn" id="selectNone">Clear</button>
+      <button class="linkbtn" id="selectNone">Unselect All</button>
     </div>
     <div class="addtrick-cta" id="openAdd">+ <b>Add a trick</b> — from your Excel list, an Advanced tag, whatever's missing</div>
     <div class="addtrick-cta" id="openGuides">📖 <b>Guides</b> — routines and principles</div>
@@ -580,6 +580,7 @@ async function loadLevels(){
       selectedLevels = new Set(arr.filter(l => LEVELS.includes(l)));
     }
   }catch(e){}
+  if(selectedLevels.size === 0) LEVELS.forEach(l => selectedLevels.add(l));
 }
 async function saveLevels(){
   try{ await window.storage.set(LEVEL_KEY, JSON.stringify(Array.from(selectedLevels)), false); }catch(e){}
@@ -671,7 +672,9 @@ function openGuides(){
   const backdrop = openModal(`<h2>Guides</h2><p class="lead">Routines and principles. Not part of the deck.</p>${body || '<p class="lead">No guides left.</p>'}`);
   backdrop.querySelectorAll('.jump').forEach(b => b.onclick = () => { backdrop.remove(); jumpToTrick(b.dataset.name); });
   backdrop.querySelectorAll('.rm-guide').forEach(b => b.onclick = async () => {
-    await removeItem(guideId(guides[Number(b.dataset.idx)]));
+    const g = guides[Number(b.dataset.idx)];
+    if(!confirm(`Remove the guide "${g.title}"? You can restore it from Removed items.`)) return;
+    await removeItem(guideId(g));
     updateExtras();
     backdrop.remove();
     openGuides();
@@ -683,8 +686,17 @@ function openRemoved(){
   BUILTIN_TRICKS.forEach(t => { if(hidden.has(trickId(t))) items.push({id: trickId(t), label: t.name, tag: t.category}); });
   GUIDES.forEach(g => { if(hidden.has(guideId(g))) items.push({id: guideId(g), label: g.title, tag: 'Guide'}); });
   const backdrop = openModal(`<h2>Removed items</h2><p class="lead">Restore anything you removed.</p>` +
+    (items.length ? '<button class="linkbtn" id="restoreAll">Restore all</button>' : '') +
     (items.map((it, i) => `<div class="custom-item"><span>${it.label} <span class="tag">${it.tag}</span></span>
       <button class="linkbtn rs" data-idx="${i}">Restore</button></div>`).join('') || '<p class="lead">Nothing removed.</p>'));
+  const ra = backdrop.querySelector('#restoreAll');
+  if(ra) ra.onclick = async () => {
+    hidden.clear();
+    await saveHidden();
+    renderChips();
+    updateStartState();
+    backdrop.remove();
+  };
   backdrop.querySelectorAll('.rs').forEach(b => b.onclick = async () => {
     await restoreItem(items[Number(b.dataset.idx)].id);
     renderChips();
@@ -699,6 +711,7 @@ document.getElementById('openRemoved').onclick = openRemoved;
 document.getElementById('removeBtn').onclick = async (e) => {
   e.stopPropagation();
   const t = deck[viewPos];
+  if(!confirm(`Remove "${t.name}"? You can restore it from Removed items.`)) return;
   await removeItem(trickId(t));
   deck = deck.filter(x => x !== t);
   renderChips();
@@ -905,6 +918,7 @@ function renderCustomList(){
      <button class="del-x" data-idx="${i}">\u2715</button></div>`).join('');
   wrap.querySelectorAll('.del-x').forEach(btn => {
     btn.onclick = async () => {
+      if(!confirm(`Delete "${customTricks[Number(btn.dataset.idx)].name}"? This cannot be undone.`)) return;
       customTricks.splice(Number(btn.dataset.idx), 1);
       await saveCustom();
       renderChips();
